@@ -1,0 +1,30 @@
+{
+  "name": "automated-garden-management-system",
+  "version": "1.0.0",
+  "description": "You have recently become the owner of a home with a spacious garden. As\r a passionate plant enthusiast, you wish to fill it with diverse plant species.\r However, managing an extensive plant inventory presents a challenge,\r given the limited physical space and the need to remember specific needs\r (in particular humidity levels) per plant",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OvidiuCalin123/Automated-Garden-Management-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/OvidiuCalin123/Automated-Garden-Management-System/issues"
+  },
+  "homepage": "https://github.com/OvidiuCalin123/Automated-Garden-Management-System#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
