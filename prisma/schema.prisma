@@ -1,0 +1,78 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PlantType {
+  VEGETABLE
+  FRUIT
+  FLOWER
+}
+
+model User {
+  userId      String   @id @default(uuid()) @db.Uuid
+  firstName   String
+  lastName    String
+  age         Int
+  emailAddress String  @unique
+
+  gardens     Garden[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Garden {
+  gardenId          String   @id @default(uuid()) @db.Uuid
+  gardenName        String
+  totalSurfaceArea  Decimal  @db.Decimal(10, 2)
+  locationDescription String
+  latitude          Float?
+  longitude         Float?
+
+  userId            String   @db.Uuid
+  user              User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  plants            Plant[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Plant {
+  plantId             String    @id @default(uuid()) @db.Uuid
+  plantName           String
+  species             String
+  plantType           PlantType
+  plantationDate      DateTime  @db.Date
+  surfaceAreaRequired Decimal   @db.Decimal(10, 2)
+  idealHumidityLevel  Int
+
+  gardenId            String    @db.Uuid
+  garden              Garden    @relation(fields: [gardenId], references: [gardenId], onDelete: Cascade)
+
+  metric              PlantMetric?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([gardenId])
+}
+
+model PlantMetric {
+  plantId                 String   @id @db.Uuid
+  plant                   Plant    @relation(fields: [plantId], references: [plantId], onDelete: Cascade)
+
+  lastIrrigationStartTime DateTime?
+  lastIrrigationEndTime   DateTime?
+  currentHumidityLevel    Int      @default(50)
+
+  updatedAt               DateTime @updatedAt
+}
