@@ -2,21 +2,31 @@ import {
   IPlantRepository,
   CreatePlantResult,
 } from "../../Application/Interfaces/IPlantRepository.js";
+
 import { Plant } from "../../Domain/Entities/Plant.js";
 import { prisma } from "../Database/prisma.js";
+import type { Prisma } from "../../../generated/prisma/client.js";
+
+type PlantWithMetric = Prisma.PlantGetPayload<{
+  include: { metric: true };
+}>;
 
 export class PrismaPlantRepository implements IPlantRepository {
-  private mapPlant(
-    plant: Awaited<ReturnType<typeof prisma.plant.create>>,
-  ): Plant {
+  private mapPlant(plant: PlantWithMetric): Plant {
     return {
       ...plant,
       surfaceAreaRequired: Number(plant.surfaceAreaRequired),
+      metric: plant.metric
+        ? {
+            ...plant.metric,
+            currentHumidityLevel: Number(plant.metric.currentHumidityLevel),
+          }
+        : null,
     };
   }
 
   async createWithinCapacity(
-    plant: Omit<Plant, "plantId">,
+    plant: Omit<Plant, "plantId" | "metric">,
   ): Promise<CreatePlantResult> {
     return prisma.$transaction(async (transaction) => {
       const lockedGarden = await transaction.$queryRaw<{ gardenId: string }[]>`
@@ -48,8 +58,7 @@ export class PrismaPlantRepository implements IPlantRepository {
 
       const usedArea = Number(existingPlants._sum.surfaceAreaRequired ?? 0);
 
-      const totalArea = Number(garden.totalSurfaceArea);
-      const availableArea = totalArea - usedArea;
+      const availableArea = Number(garden.totalSurfaceArea) - usedArea;
 
       if (plant.surfaceAreaRequired > availableArea) {
         return {
@@ -67,6 +76,9 @@ export class PrismaPlantRepository implements IPlantRepository {
             },
           },
         },
+        include: {
+          metric: true,
+        },
       });
 
       return {
@@ -74,5 +86,33 @@ export class PrismaPlantRepository implements IPlantRepository {
         plant: this.mapPlant(createdPlant),
       };
     });
+  }
+
+  async findByGardenId(gardenId: string): Promise<Plant[]> {
+    const plants = await prisma.plant.findMany({
+      where: { gardenId },
+      include: {
+        metric: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    return plants.map((plant) => this.mapPlant(plant));
+  }
+
+  async findById(plantId: string, gardenId: string): Promise<Plant | null> {
+    const plant = await prisma.plant.findFirst({
+      where: {
+        plantId,
+        gardenId,
+      },
+      include: {
+        metric: true,
+      },
+    });
+
+    return plant ? this.mapPlant(plant) : null;
   }
 }

@@ -7,6 +7,10 @@ export type CreatePlantResult =
 
 export interface IPlantRepository {
   createWithinCapacity(
-    plant: Omit<Plant, "plantId">,
+    plant: Omit<Plant, "plantId" | "metric">,
   ): Promise<CreatePlantResult>;
+
+  findByGardenId(gardenId: string): Promise<Plant[]>;
+
+  findById(plantId: string, gardenId: string): Promise<Plant | null>;
 }
