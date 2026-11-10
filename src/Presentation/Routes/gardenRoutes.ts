@@ -9,6 +9,7 @@ import {
 } from "../../CompositionRoot/gardenDependencies.js";
 import { validateCreateGarden } from "../Middleware/validateCreateGarden.js";
 import { validateUpdateGarden } from "../Middleware/validateUpdateGarden.js";
+import plantRoutes from "./plantRoutes.js";
 
 const router = Router({ mergeParams: true });
 
@@ -24,5 +25,6 @@ router.get("/", gardenController.getByUser);
 router.get("/:gardenId", gardenController.getById);
 router.put("/:gardenId", validateUpdateGarden, gardenController.update);
 router.delete("/:gardenId", gardenController.delete);
+router.use("/:gardenId/plants", plantRoutes);
 
 export default router;
