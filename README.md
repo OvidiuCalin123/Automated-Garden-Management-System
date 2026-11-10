@@ -164,68 +164,78 @@ The API uses nested resource routes
 
 ### Prerequisites
 
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) with Docker Compose.
+
+### Running with Docker (Recommended)
+
+1. Clone the repository:
+
+   ```bash
+   git clone <repository-url>
+   cd Automated-Garden-Management-System
+   ```
+
+2. Create a `.env` file in the project root, using `.env.example` as a reference.
+
+   Configure the Docker PostgreSQL variables:
+
+   ```env
+   POSTGRES_USER=garden_user
+   POSTGRES_PASSWORD=your_secure_password
+   POSTGRES_DB=garden_db
+   ```
+
+3. Build and start the application:
+
+   ```bash
+   docker compose up --build
+   ```
+
+   Docker Compose starts PostgreSQL, waits for the database to become healthy, applies Prisma migrations, and starts the API.
+
+### Manual Setup (Alternative)
+
+If you prefer to run the application without Docker:
+
+**Prerequisites:**
+
 - Node.js
 - npm
 - PostgreSQL
 
-### Installation
+1. Install dependencies:
 
-Clone the repository and install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-git clone <repository-url>
-cd Automated-Garden-Management-System
-npm install
-```
+2. Configure your `.env` file:
 
-Create a `.env` file with the appropiate variables:
+   ```env
+   PORT=3000
+   NODE_ENV=development
+   API_BASE_URL=http://localhost:3000
+   API_ENVIRONMENT=Development
+   DATABASE_URL="postgresql://garden_user:YOUR_PASSWORD@localhost:5432/garden_db?schema=public"
+   ```
 
-```bash
-PORT=
-DATABASE_URL=
-POSTGRES_DB=
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-NODE_ENV=
-API_BASE_URL=
-API_ENVIRONMENT=
-```
+3. Generate the Prisma client:
 
-Configure the PostgreSQL connection string and application settings in `.env`.
+   ```bash
+   npx prisma generate
+   ```
 
-Example:
+4. Apply database migrations:
 
-```env
-PORT=3000
-NODE_ENV=development
+   ```bash
+   npx prisma migrate dev
+   ```
 
-API_BASE_URL=http://localhost:3000
-API_ENVIRONMENT=Development
+5. Start the development server:
 
-DATABASE_URL="postgresql://garden_user:YOUR_PASSWORD@localhost:5432/garden_db?schema=public"
-```
-
-### Database Setup
-
-Generate the Prisma client:
-
-```bash
-npx prisma generate
-```
-
-Apply database migrations:
-
-```bash
-npx prisma migrate dev
-```
-
-### Run the Application
-
-Start the development server:
-
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
 The API will be available at:
 
