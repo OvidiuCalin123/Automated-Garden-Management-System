@@ -4,7 +4,7 @@
   "description": "You have recently become the owner of a home with a spacious garden. As\r a passionate plant enthusiast, you wish to fill it with diverse plant species.\r However, managing an extensive plant inventory presents a challenge,\r given the limited physical space and the need to remember specific needs\r (in particular humidity levels) per plant",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsx --test tests/garden-services.test.ts tests/plant-services.test.ts",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/src/server.js"
