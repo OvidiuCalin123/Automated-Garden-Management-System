@@ -43,11 +43,15 @@ export class GardenController {
   };
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const userId = Array.isArray(req.params.userId)
+        ? req.params.userId[0]
+        : req.params.userId;
+
       const gardenId = Array.isArray(req.params.gardenId)
         ? req.params.gardenId[0]
         : req.params.gardenId;
 
-      const garden = await this.getGardenService.execute(gardenId);
+      const garden = await this.getGardenService.execute(userId, gardenId);
 
       res.status(200).json(garden);
     } catch (error) {
@@ -56,11 +60,19 @@ export class GardenController {
   };
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const userId = Array.isArray(req.params.userId)
+        ? req.params.userId[0]
+        : req.params.userId;
+
       const gardenId = Array.isArray(req.params.gardenId)
         ? req.params.gardenId[0]
         : req.params.gardenId;
 
-      const garden = await this.updateGardenService.execute(gardenId, req.body);
+      const garden = await this.updateGardenService.execute(
+        userId,
+        gardenId,
+        req.body,
+      );
 
       res.status(200).json(garden);
     } catch (error) {
@@ -69,11 +81,15 @@ export class GardenController {
   };
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const userId = Array.isArray(req.params.userId)
+        ? req.params.userId[0]
+        : req.params.userId;
+
       const gardenId = Array.isArray(req.params.gardenId)
         ? req.params.gardenId[0]
         : req.params.gardenId;
 
-      await this.deleteGardenService.execute(gardenId);
+      await this.deleteGardenService.execute(userId, gardenId);
 
       res.status(204).send();
     } catch (error) {

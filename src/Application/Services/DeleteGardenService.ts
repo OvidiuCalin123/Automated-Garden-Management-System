@@ -4,10 +4,10 @@ import { AppError } from "../Errors/AppError.js";
 export class DeleteGardenService {
   constructor(private readonly gardenRepository: IGardenRepository) {}
 
-  async execute(gardenId: string): Promise<void> {
+  async execute(userId: string, gardenId: string): Promise<void> {
     const garden = await this.gardenRepository.findById(gardenId);
 
-    if (!garden) {
+    if (!garden || garden.userId !== userId) {
       throw new AppError("Garden not found.", 404);
     }
 

@@ -1,4 +1,7 @@
-import { IGardenRepository } from "../../Application/Interfaces/IGardenRepository.js";
+import {
+  IGardenRepository,
+  UpdateGardenResult,
+} from "../../Application/Interfaces/IGardenRepository.js";
 import { Garden } from "../../Domain/Entities/Garden.js";
 import { prisma } from "../Database/prisma.js";
 
@@ -34,16 +37,68 @@ export class PrismaGardenRepository implements IGardenRepository {
     return gardens.map((garden) => this.mapGarden(garden));
   }
 
-  async update(
+  async updateWithinCapacity(
     gardenId: string,
-    data: Partial<Omit<Garden, "gardenId" | "userId">>,
-  ): Promise<Garden> {
-    const updatedGarden = await prisma.garden.update({
-      where: { gardenId },
-      data,
-    });
+    data: Partial<
+      Pick<
+        Garden,
+        | "gardenName"
+        | "totalSurfaceArea"
+        | "locationDescription"
+        | "latitude"
+        | "longitude"
+      >
+    >,
+  ): Promise<UpdateGardenResult> {
+    return prisma.$transaction(async (tx) => {
+      const lockedGardens = await tx.$queryRaw<Array<{ gardenId: string }>>`
+            SELECT "gardenId"
+            FROM "Garden"
+            WHERE "gardenId" = ${gardenId}::uuid
+            FOR UPDATE
+        `;
 
-    return this.mapGarden(updatedGarden);
+      if (lockedGardens.length === 0) {
+        return { status: "garden_not_found" };
+      }
+
+      const garden = await tx.garden.findUnique({
+        where: { gardenId },
+      });
+
+      if (!garden) {
+        return { status: "garden_not_found" };
+      }
+
+      const plantArea = await tx.plant.aggregate({
+        where: { gardenId },
+        _sum: {
+          surfaceAreaRequired: true,
+        },
+      });
+
+      const usedArea = Number(plantArea._sum.surfaceAreaRequired ?? 0);
+
+      const newTotalArea =
+        data.totalSurfaceArea ?? Number(garden.totalSurfaceArea);
+
+      if (newTotalArea < usedArea) {
+        return {
+          status: "capacity_exceeded",
+          usedArea,
+        };
+      }
+
+      const updatedGarden = await tx.garden.update({
+        where: { gardenId },
+        data,
+      });
+
+      return {
+        status: "updated",
+        garden: this.mapGarden(updatedGarden),
+      };
+    });
   }
 
   async delete(gardenId: string): Promise<void> {
