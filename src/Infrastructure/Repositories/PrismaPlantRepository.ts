@@ -195,4 +195,14 @@ export class PrismaPlantRepository implements IPlantRepository {
       };
     });
   }
+  async delete(plantId: string, gardenId: string): Promise<boolean> {
+    const result = await prisma.plant.deleteMany({
+      where: {
+        plantId,
+        gardenId,
+      },
+    });
+
+    return result.count > 0;
+  }
 }

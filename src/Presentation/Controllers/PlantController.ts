@@ -4,6 +4,7 @@ import { CreatePlantService } from "../../Application/Services/CreatePlantServic
 import { GetGardenPlantsService } from "../../Application/Services/GetGardenPlantsService.js";
 import { GetPlantService } from "../../Application/Services/GetPlantService.js";
 import { UpdatePlantService } from "../../Application/Services/UpdatePlantService.js";
+import { DeletePlantService } from "../../Application/Services/DeletePlantService.js";
 
 export class PlantController {
   constructor(
@@ -11,6 +12,7 @@ export class PlantController {
     private readonly getGardenPlantsService: GetGardenPlantsService,
     private readonly getPlantService: GetPlantService,
     private readonly updatePlantService: UpdatePlantService,
+    private readonly deletePlantService: DeletePlantService,
   ) {}
 
   create = async (req: Request, res: Response, next: NextFunction) => {
@@ -104,6 +106,27 @@ export class PlantController {
       );
 
       res.status(200).json(plant);
+    } catch (error) {
+      next(error);
+    }
+  };
+  delete = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = Array.isArray(req.params.userId)
+        ? req.params.userId[0]
+        : req.params.userId;
+
+      const gardenId = Array.isArray(req.params.gardenId)
+        ? req.params.gardenId[0]
+        : req.params.gardenId;
+
+      const plantId = Array.isArray(req.params.plantId)
+        ? req.params.plantId[0]
+        : req.params.plantId;
+
+      await this.deletePlantService.execute(userId, gardenId, plantId);
+
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

@@ -37,4 +37,6 @@ export interface IPlantRepository {
     gardenId: string,
     data: UpdatePlantData,
   ): Promise<UpdatePlantResult>;
+
+  delete(plantId: string, gardenId: string): Promise<boolean>;
 }

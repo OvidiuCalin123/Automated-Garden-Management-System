@@ -7,6 +7,7 @@ import {
   getGardenPlantsService,
   getPlantService,
   updatePlantService,
+  deletePlantService,
 } from "../../CompositionRoot/plantDependencies.js";
 
 import { validateCreatePlant } from "../Middleware/validateCreatePlant.js";
@@ -19,14 +20,13 @@ const plantController = new PlantController(
   getGardenPlantsService,
   getPlantService,
   updatePlantService,
+  deletePlantService,
 );
 
 router.post("/", validateCreatePlant, plantController.create);
-
 router.get("/", plantController.getByGarden);
-
 router.get("/:plantId", plantController.getById);
-
 router.put("/:plantId", validateUpdatePlant, plantController.update);
+router.delete("/:plantId", plantController.delete);
 
 export default router;
