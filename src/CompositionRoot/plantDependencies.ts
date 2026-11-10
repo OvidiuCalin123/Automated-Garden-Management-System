@@ -4,6 +4,7 @@ import { PrismaGardenRepository } from "../Infrastructure/Repositories/PrismaGar
 import { CreatePlantService } from "../Application/Services/CreatePlantService.js";
 import { GetGardenPlantsService } from "../Application/Services/GetGardenPlantsService.js";
 import { GetPlantService } from "../Application/Services/GetPlantService.js";
+import { UpdatePlantService } from "../Application/Services/UpdatePlantService.js";
 
 const plantRepository = new PrismaPlantRepository();
 const gardenRepository = new PrismaGardenRepository();
@@ -19,6 +20,11 @@ export const getGardenPlantsService = new GetGardenPlantsService(
 );
 
 export const getPlantService = new GetPlantService(
+  plantRepository,
+  gardenRepository,
+);
+
+export const updatePlantService = new UpdatePlantService(
   plantRepository,
   gardenRepository,
 );

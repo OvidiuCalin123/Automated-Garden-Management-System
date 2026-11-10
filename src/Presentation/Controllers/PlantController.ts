@@ -3,12 +3,14 @@ import type { Request, Response, NextFunction } from "express";
 import { CreatePlantService } from "../../Application/Services/CreatePlantService.js";
 import { GetGardenPlantsService } from "../../Application/Services/GetGardenPlantsService.js";
 import { GetPlantService } from "../../Application/Services/GetPlantService.js";
+import { UpdatePlantService } from "../../Application/Services/UpdatePlantService.js";
 
 export class PlantController {
   constructor(
     private readonly createPlantService: CreatePlantService,
     private readonly getGardenPlantsService: GetGardenPlantsService,
     private readonly getPlantService: GetPlantService,
+    private readonly updatePlantService: UpdatePlantService,
   ) {}
 
   create = async (req: Request, res: Response, next: NextFunction) => {
@@ -72,6 +74,33 @@ export class PlantController {
         userId,
         gardenId,
         plantId,
+      );
+
+      res.status(200).json(plant);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  update = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = Array.isArray(req.params.userId)
+        ? req.params.userId[0]
+        : req.params.userId;
+
+      const gardenId = Array.isArray(req.params.gardenId)
+        ? req.params.gardenId[0]
+        : req.params.gardenId;
+
+      const plantId = Array.isArray(req.params.plantId)
+        ? req.params.plantId[0]
+        : req.params.plantId;
+
+      const plant = await this.updatePlantService.execute(
+        userId,
+        gardenId,
+        plantId,
+        req.body,
       );
 
       res.status(200).json(plant);

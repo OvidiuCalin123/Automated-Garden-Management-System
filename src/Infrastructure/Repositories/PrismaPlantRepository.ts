@@ -1,6 +1,8 @@
 import {
   IPlantRepository,
   CreatePlantResult,
+  UpdatePlantData,
+  UpdatePlantResult,
 } from "../../Application/Interfaces/IPlantRepository.js";
 
 import { Plant } from "../../Domain/Entities/Plant.js";
@@ -114,5 +116,83 @@ export class PrismaPlantRepository implements IPlantRepository {
     });
 
     return plant ? this.mapPlant(plant) : null;
+  }
+
+  async updateWithinCapacity(
+    plantId: string,
+    gardenId: string,
+    data: UpdatePlantData,
+  ): Promise<UpdatePlantResult> {
+    return prisma.$transaction(async (transaction) => {
+      const lockedGarden = await transaction.$queryRaw<{ gardenId: string }[]>`
+            SELECT "gardenId"
+            FROM "Garden"
+            WHERE "gardenId" = ${gardenId}::uuid
+            FOR UPDATE
+        `;
+
+      if (lockedGarden.length === 0) {
+        return { status: "garden_not_found" };
+      }
+
+      const existingPlant = await transaction.plant.findFirst({
+        where: {
+          plantId,
+          gardenId,
+        },
+      });
+
+      if (!existingPlant) {
+        return { status: "plant_not_found" };
+      }
+
+      const garden = await transaction.garden.findUnique({
+        where: { gardenId },
+        select: { totalSurfaceArea: true },
+      });
+
+      if (!garden) {
+        return { status: "garden_not_found" };
+      }
+
+      const otherPlants = await transaction.plant.aggregate({
+        where: {
+          gardenId,
+          plantId: {
+            not: plantId,
+          },
+        },
+        _sum: {
+          surfaceAreaRequired: true,
+        },
+      });
+
+      const usedArea = Number(otherPlants._sum.surfaceAreaRequired ?? 0);
+
+      const availableArea = Number(garden.totalSurfaceArea) - usedArea;
+
+      const requestedArea =
+        data.surfaceAreaRequired ?? Number(existingPlant.surfaceAreaRequired);
+
+      if (requestedArea > availableArea) {
+        return {
+          status: "capacity_exceeded",
+          availableArea,
+        };
+      }
+
+      const updatedPlant = await transaction.plant.update({
+        where: { plantId },
+        data,
+        include: {
+          metric: true,
+        },
+      });
+
+      return {
+        status: "updated",
+        plant: this.mapPlant(updatedPlant),
+      };
+    });
   }
 }
