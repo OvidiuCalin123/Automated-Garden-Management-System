@@ -3,6 +3,7 @@ import { CreateGardenService } from "../../Application/Services/CreateGardenServ
 import { GetUserGardensService } from "../../Application/Services/GetUserGardensService.js";
 import { GetGardenService } from "../../Application/Services/GetGardenService.js";
 import { UpdateGardenService } from "../../Application/Services/UpdateGardenService.js";
+import { DeleteGardenService } from "../../Application/Services/DeleteGardenService.js";
 
 export class GardenController {
   constructor(
@@ -10,6 +11,7 @@ export class GardenController {
     private readonly getUserGardensService: GetUserGardensService,
     private readonly getGardenService: GetGardenService,
     private readonly updateGardenService: UpdateGardenService,
+    private readonly deleteGardenService: DeleteGardenService,
   ) {}
 
   create = async (req: Request, res: Response, next: NextFunction) => {
@@ -61,6 +63,19 @@ export class GardenController {
       const garden = await this.updateGardenService.execute(gardenId, req.body);
 
       res.status(200).json(garden);
+    } catch (error) {
+      next(error);
+    }
+  };
+  delete = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const gardenId = Array.isArray(req.params.gardenId)
+        ? req.params.gardenId[0]
+        : req.params.gardenId;
+
+      await this.deleteGardenService.execute(gardenId);
+
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
